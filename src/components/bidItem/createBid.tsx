@@ -2,30 +2,27 @@ import {
   Box,
   CircularProgress,
   FormHelperText,
-  TextareaAutosize,
   TextField,
   Typography,
 } from '@mui/material';
 import {
-  Controller,
   FormProvider,
   SubmitHandler,
   useForm,
 } from 'react-hook-form';
-import { object, string, TypeOf, z } from 'zod';
+import { object, string, TypeOf } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoadingButton } from '@mui/lab';
 import { FC, useEffect } from 'react';
-import { pickBy } from 'lodash';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createBidFn } from '../../api/bidItemApi';
-import { IBidItemResponse, IBidResponse } from '../../api/types';
+import { IBidItemResponse } from '../../api/types';
 import { useStateContext } from '../../context';
 // import FileUpLoader from '../FileUpLoader';
 
 interface ICreateBidProp {
-  setOpenBidItemModal: (openPostModal: boolean) => void;
+  setOpenBidModal: (openPostModal: boolean) => void;
   bidItem: IBidItemResponse;
 }
 
@@ -35,7 +32,7 @@ const createBidSchema = object({
 
 type ICreateBid = TypeOf<typeof createBidSchema>;
 
-const CreateBid: FC<ICreateBidProp> = ({ setOpenBidItemModal, bidItem }) => {
+const CreateBid: FC<ICreateBidProp> = ({ setOpenBidModal, bidItem }) => {
   const stateContext = useStateContext();
   const user = stateContext.state.authUser;
   const queryClient = useQueryClient();
@@ -46,10 +43,10 @@ const CreateBid: FC<ICreateBidProp> = ({ setOpenBidItemModal, bidItem }) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['bid-item']);
         toast.success('Bid successfully');
-        setOpenBidItemModal(false);
+        setOpenBidModal(false);
       },
       onError: (error: any) => {
-        setOpenBidItemModal(false);
+        setOpenBidModal(false);
         if (Array.isArray(error.response.data.error)) {
           error.data.error.forEach((el: any) =>
             toast.error(el.message, {
@@ -74,7 +71,7 @@ const CreateBid: FC<ICreateBidProp> = ({ setOpenBidItemModal, bidItem }) => {
   } = methods;
 
   const {
-    formState: { errors, isSubmitSuccessful },
+    formState: { errors },
   } = methods;
 
   useEffect(() => {

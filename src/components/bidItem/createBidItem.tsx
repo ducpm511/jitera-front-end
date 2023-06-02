@@ -2,20 +2,22 @@ import {
     Box,
     CircularProgress,
     FormHelperText,
-    TextareaAutosize,
+    InputLabel,
+    MenuItem,
+    Select,
+    SelectChangeEvent,
     TextField,
     Typography,
   } from '@mui/material';
   import {
-    Controller,
     FormProvider,
     SubmitHandler,
     useForm,
   } from 'react-hook-form';
-  import { number, object, string, TypeOf, z } from 'zod';
+  import { object, string, TypeOf } from 'zod';
   import { zodResolver } from '@hookform/resolvers/zod';
   import { LoadingButton } from '@mui/lab';
-  import { FC, useEffect } from 'react';
+  import { FC, useEffect, useState } from 'react';
   import { toast } from 'react-toastify';
   import { useMutation, useQueryClient } from '@tanstack/react-query';
   import { createBidItemFn } from '../../api/bidItemApi';
@@ -35,6 +37,7 @@ import {
   
   const CreateBidItem: FC<ICreateBidItemProp> = ({ setOpenBidItemModal }) => {
     const queryClient = useQueryClient();
+    const [status, setStatus] = useState('draft');
     const { isLoading, mutate: createBidItem } = useMutation(
       (bidItem: any) => createBidItemFn(bidItem),
       {
@@ -82,7 +85,8 @@ import {
       let formatedValues = {
         "name": '',
         "startedPrice": 0,
-        "timeWindow": 0
+        "timeWindow": 0,
+        "status": status
       };
       formatedValues.name = values.name;
       formatedValues.startedPrice = Number(values.startedPrice);
@@ -90,6 +94,9 @@ import {
       createBidItem(formatedValues);
     };
   
+    const handleChange = (event: SelectChangeEvent) => {
+      setStatus(event.target.value as string);
+    };
     return (
       <Box>
         <Box display='flex' justifyContent='space-between' sx={{ mb: 3 }}>
@@ -133,7 +140,22 @@ import {
             <FormHelperText error={!!errors['timeWindow']}>
               {errors['timeWindow'] ? errors['timeWindow'].message : ''}
             </FormHelperText>
-            {/* <FileUpLoader name='image' /> */}
+            
+            <InputLabel id="demo-simple-select-label">Status</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={status}
+              label="Status"
+              sx={{ mb: '1rem' }}
+              style={{ "width": "100%", "color": "#000000" }}
+              onChange={handleChange}
+            >
+              <MenuItem value={'draft'}>Draft</MenuItem>
+              <MenuItem value={'published'}>Published</MenuItem>
+              <MenuItem value={'on_going'}>On Going</MenuItem>
+              <MenuItem value={'completed'}>Completed</MenuItem>
+            </Select>
             <LoadingButton
               variant='contained'
               fullWidth

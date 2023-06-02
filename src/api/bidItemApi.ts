@@ -29,16 +29,10 @@ export const createBidFn = async (data: any) => {
   return response.data;
 };
 
-export const updateBidItemFn = async ({
-  id,
-  formData,
-}: {
-  id: string;
-  formData: FormData;
-}) => {
-  const response = await authApi.patch<IBidItemResponse>(`bid-item/${id}`, formData, {
+export const updateBidItemFn = async ( id: string,data: any) => {
+  const response = await authApi.patch<IBidItemResponse>(`bid-item/${id}`, data, {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': 'application/json',
     },
   });
   return response.data;

@@ -1,21 +1,23 @@
 import {
   Box,
   CircularProgress,
-  TextareaAutosize,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
   TextField,
   Typography,
 } from '@mui/material';
 import {
-  Controller,
   FormProvider,
   SubmitHandler,
   useForm,
 } from 'react-hook-form';
-import { object, string, TypeOf, z } from 'zod';
+import { object, string, TypeOf} from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoadingButton } from '@mui/lab';
-import { FC, useEffect } from 'react';
-import { pickBy } from 'lodash';
+import { FC, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateBidItemFn } from '../../api/bidItemApi';
@@ -28,23 +30,24 @@ interface IUpdateBidItemProp {
 }
 
 const updateBidItemSchema = object({
-  title: string(),
-  content: string(),
-  category: string().max(50),
-  image: z.instanceof(File),
-}).partial();
+  name: string().min(1, 'Name is required'),
+  startedPrice: string().min(1, 'Start price is required'),
+  timeWindow: string().min(1, 'Time window is required'),
+  status: string()
+});
 
 type IUpdateBidItem = TypeOf<typeof updateBidItemSchema>;
 
-const UpdatePost: FC<IUpdateBidItemProp> = ({ setOpenBidItemModal, bidItem }) => {
+const UpdateBidItem: FC<IUpdateBidItemProp> = ({ setOpenBidItemModal, bidItem }) => {
   const queryClient = useQueryClient();
-  const { isLoading, mutate: updatePost } = useMutation(
-    ({ id, formData }: { id: string; formData: FormData }) =>
-    updateBidItemFn({ id, formData }),
+  const [status, setStatus] = useState('draft');
+  const { isLoading, mutate: updateBidItem } = useMutation(
+    ({ id, data }: { id: string | any; data: any }) =>
+      updateBidItemFn(id, data),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['bid-item']);
-        toast.success('Post updated successfully');
+        toast.success('Bid item updated successfully');
         setOpenBidItemModal(false);
       },
       onError: (error: any) => {
@@ -72,6 +75,10 @@ const UpdatePost: FC<IUpdateBidItemProp> = ({ setOpenBidItemModal, bidItem }) =>
     formState: { isSubmitting },
   } = methods;
 
+  const {
+    formState: { errors },
+  } = methods;
+
   useEffect(() => {
     if (isSubmitting) {
       methods.reset();
@@ -82,8 +89,10 @@ const UpdatePost: FC<IUpdateBidItemProp> = ({ setOpenBidItemModal, bidItem }) =>
   useEffect(() => {
     if (bidItem) {
       methods.reset({
-        title: bidItem.name,
-        // category: post.category,
+        name: bidItem.name,
+        startedPrice: bidItem.startedPrice.toString(),
+        timeWindow: bidItem.timeWindow.toString(),
+        status: bidItem.status
         // content: post.content,
       });
     }
@@ -91,24 +100,27 @@ const UpdatePost: FC<IUpdateBidItemProp> = ({ setOpenBidItemModal, bidItem }) =>
   }, [bidItem]);
 
   const onSubmitHandler: SubmitHandler<IUpdateBidItem> = (values) => {
-    const formData = new FormData();
-    const filteredFormData = pickBy(
-      values,
-      (value) => value !== '' && value !== undefined
-    );
-    const { image, ...otherFormData } = filteredFormData;
-    if (image) {
-      formData.append('image', image);
-    }
-    formData.append('data', JSON.stringify(otherFormData));
-    updatePost({ id: bidItem?.id!, formData });
+    let formatedValues = {
+      "name": '',
+      "startedPrice": 0,
+      "timeWindow": 0,
+      "status": 'draft'
+    };
+    formatedValues.name = values.name;
+    formatedValues.startedPrice = Number(values.startedPrice);
+    formatedValues.timeWindow = Number(values.timeWindow);
+    formatedValues.status = status;
+    updateBidItem({ id: bidItem?.id!, data: formatedValues});
   };
 
+  const handleChange = (event: SelectChangeEvent) => {
+    setStatus(event.target.value as string);
+  };
   return (
     <Box>
       <Box display='flex' justifyContent='space-between' sx={{ mb: 3 }}>
         <Typography variant='h5' component='h1'>
-          Edit Post
+          Edit Item
         </Typography>
         {isLoading && <CircularProgress size='1rem' color='primary' />}
       </Box>
@@ -120,37 +132,42 @@ const UpdatePost: FC<IUpdateBidItemProp> = ({ setOpenBidItemModal, bidItem }) =>
           onSubmit={methods.handleSubmit(onSubmitHandler)}
         >
           <TextField
-            label='Title'
+            label='Name'
             fullWidth
             sx={{ mb: '1rem' }}
-            {...methods.register('title')}
+            {...methods.register('name')}
+          />
+          <FormHelperText error={!!errors['name']}>
+            {errors['name'] ? errors['name'].message : ''}
+          </FormHelperText>
+          <TextField
+            label='Start Price'
+            fullWidth
+            sx={{ mb: '1rem' }}
+            {...methods.register('startedPrice')}
           />
           <TextField
-            label='Category'
+            label='Time window'
             fullWidth
             sx={{ mb: '1rem' }}
-            {...methods.register('category')}
+            {...methods.register('timeWindow')}
           />
-          <Controller
-            name='content'
-            control={methods.control}
-            defaultValue=''
-            render={({ field }) => (
-              <TextareaAutosize
-                {...field}
-                placeholder='Post Details'
-                minRows={8}
-                style={{
-                  width: '100%',
-                  border: '1px solid #c8d0d4',
-                  fontFamily: 'Roboto, sans-serif',
-                  outline: 'none',
-                  fontSize: '1rem',
-                  padding: '1rem',
-                }}
-              />
-            )}
-          />
+          <InputLabel id="demo-simple-select-label">Status</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={status}
+            label="Status"
+            sx={{ mb: '1rem' }}
+            style={{ "width": "100%", "color": "#000000" }}
+            onChange={handleChange}
+          // {...methods.register('status')}
+          >
+            <MenuItem value={'draft'}>Draft</MenuItem>
+            <MenuItem value={'published'}>Published</MenuItem>
+            <MenuItem value={'on_going'}>On Going</MenuItem>
+            <MenuItem value={'completed'}>Completed</MenuItem>
+          </Select>
           {/* <FileUpLoader name='image' /> */}
           <LoadingButton
             variant='contained'
@@ -159,7 +176,7 @@ const UpdatePost: FC<IUpdateBidItemProp> = ({ setOpenBidItemModal, bidItem }) =>
             type='submit'
             loading={isLoading}
           >
-            Edit Post
+            Edit Item
           </LoadingButton>
         </Box>
       </FormProvider>
@@ -167,4 +184,4 @@ const UpdatePost: FC<IUpdateBidItemProp> = ({ setOpenBidItemModal, bidItem }) =>
   );
 };
 
-export default UpdatePost;
+export default UpdateBidItem;
