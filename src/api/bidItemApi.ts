@@ -1,5 +1,5 @@
 import { authApi } from './authApi';
-import { GenericResponse, IBidItemsResponse, IBidItemResponse } from './types';
+import { GenericResponse, IBidItemsResponse, IBidItemResponse, IBidResponse } from './types';
 
 export const getAllBidItemsFn = async () => {
   const response = await authApi.get<IBidItemsResponse>(`bid-item`);
@@ -13,6 +13,15 @@ export const getBidItemFn = async (id: string) => {
 
 export const createBidItemFn = async (data: any) => {
   const response = await authApi.post<IBidItemResponse>(`bid-item`, data, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.data;
+};
+
+export const createBidFn = async (data: any) => {
+  const response = await authApi.post<IBidResponse>(`bid`, data, {
     headers: {
       'Content-Type': 'application/json',
     },

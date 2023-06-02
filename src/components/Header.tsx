@@ -9,6 +9,8 @@ import { useMutation } from '@tanstack/react-query';
 import { logoutUserFn } from '../api/authApi';
 import CreateBidItem from './bidItem/createBidItem';
 import BidItemModal from './modals/bidItem.modal';
+import DepositModal from './modals/deposit.modal';
+import CreateDeposit from './user/createDeposit';
 
 const LoadingButton = styled(_LoadingButton)`
   padding: 0.4rem;
@@ -22,6 +24,7 @@ const LoadingButton = styled(_LoadingButton)`
 
 const Header = () => {
   const [openBidItemModal, setOpenBidItemModal] = useState(false);
+  const [openDepositModal, setDepositModal] = useState(false);
   const navigate = useNavigate();
   const stateContext = useStateContext();
   const user = stateContext.state.authUser;
@@ -92,7 +95,7 @@ const Header = () => {
                   <LoadingButton onClick={() => setOpenBidItemModal(true)}>
                     Create Bid Item
                   </LoadingButton>
-                  <LoadingButton onClick={() => setOpenBidItemModal(true)}>
+                  <LoadingButton onClick={() => setDepositModal(true)}>
                     Deposit
                   </LoadingButton>
                 </>
@@ -115,6 +118,14 @@ const Header = () => {
       >
         <CreateBidItem setOpenBidItemModal={setOpenBidItemModal} />
       </BidItemModal>
+
+      <DepositModal
+        openDepositModal={openDepositModal}
+        setDepositModal={setDepositModal}
+      >
+        <CreateDeposit setDepositModal={setDepositModal} />
+      </DepositModal>
+   
     </>
   );
 };

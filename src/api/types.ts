@@ -43,6 +43,12 @@ export interface IBidItemResponse {
     created_at: string;
     updated_at: string;
 }
+export interface IBidResponse{
+    id: string;
+    bidPrice: number;
+    userId: string;
+    bidItemId: string;
+}
 
 export interface IBidItemsResponse {
     status: string;

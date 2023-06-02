@@ -10,7 +10,7 @@ const ProfilePage = () => {
     <Container
       maxWidth={false}
       sx={{
-        backgroundColor: '#2363eb',
+        backgroundColor: '#223675',
         minHeight: '100vh',
       }}
     >
