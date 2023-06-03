@@ -6,6 +6,11 @@ export const getAllBidItemsFn = async () => {
   return response.data;
 };
 
+export const getAllBidItemsByStatusFn = async (status: string) => {
+  const response = await authApi.get<IBidItemsResponse>(`bid-item/${status}`);
+  return response.data;
+};
+
 export const getBidItemFn = async (id: string) => {
   const response = await authApi.get<IBidItemResponse>(`bid-item/${id}`);
   return response.data;

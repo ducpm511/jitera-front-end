@@ -1,7 +1,7 @@
-import { Box, Container, Grid } from '@mui/material';
+import { Box, Button, Container, Grid } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { getAllBidItemsFn } from '../api/bidItemApi';
+import { getAllBidItemsByStatusFn } from '../api/bidItemApi';
 // import FullScreenLoader from '../components/FullScreenLoader';
 import BidItem from '../components/bidItem/bidItem.component';
 import Message from '../components/Message';
@@ -14,11 +14,14 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import FullScreenLoader from '../components/FullScreenLoader';
+import { useState } from 'react';
 
 const HomePage = () => {
+  const [filterStatus, setFilterStatus] = useState('');
   const { isLoading, data: bidItems } = useQuery(
-    ['bid-item'],
-    () => getAllBidItemsFn(),
+    ['bid-item', filterStatus],
+    () => getAllBidItemsByStatusFn(filterStatus),
     {
       select: (data) => data.data.bidItems,
       onError: (error) => {
@@ -38,7 +41,7 @@ const HomePage = () => {
   );
 
   if (isLoading) {
-    // return <FullScreenLoader />;
+    return <FullScreenLoader />;
   }
 
   return (
@@ -54,6 +57,13 @@ const HomePage = () => {
         </Box>
       ) : (
         <>
+        <Grid container spacing={2} style={{"marginBottom": "20px"}}>
+          <Grid item xs={12} md={4}>
+            <Button variant="contained" style={{"marginRight": "10px"}} onClick={() => setFilterStatus('')}>Show all</Button>
+            <Button variant="contained" color="secondary" style={{"marginRight": "10px"}} onClick={() => setFilterStatus('on_going')}>Ongoing</Button>
+            <Button variant="contained" color="success" onClick={() => setFilterStatus('completed')}>Completed</Button>
+          </Grid>
+        </Grid>
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead>
@@ -62,6 +72,7 @@ const HomePage = () => {
                   <TableCell align="right">Start Price</TableCell>
                   <TableCell align="right">Current Price</TableCell>
                   <TableCell align="right">Duration</TableCell>
+                  <TableCell align="right">Status</TableCell>
                   <TableCell align="right">Bid</TableCell>
                 </TableRow>
               </TableHead>

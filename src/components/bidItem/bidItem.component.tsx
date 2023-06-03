@@ -83,6 +83,7 @@ const BidItem: FC<IBidItemProps> = ({ bidItem }) => {
         <TableCell align="right">{bidItem.startedPrice}</TableCell>
         <TableCell align="right">{bidItem.currentPrice}</TableCell>
         <TableCell align="right">{decimalToTime(bidItem.timeWindow)}</TableCell>
+        <TableCell align="right">{bidItem.status}</TableCell>
         <TableCell align="right">
           <Button variant="outlined" onClick={hanldeEditClick} startIcon={<ModeEditIcon />} style={{"marginRight":"10px"}}>Edit</Button>
           <Button variant="outlined" onClick={hanldeBidClick} startIcon={<BackHandIcon />}>Bid</Button>
